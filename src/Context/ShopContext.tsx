@@ -20,6 +20,7 @@ const ShopContextProvider = (props) => {
       return
     }
 
+
     if(cartData[itemId]) {
       if (cartData[itemId][size]) {
         cartData[itemId][size] += 1;
@@ -33,26 +34,33 @@ const ShopContextProvider = (props) => {
       cartData[itemId][size] = 1;
     }
     setCartItems(cartData)
+    toast.success("🛒 Item added to cart!", {
+      position: "top-right",
+      autoClose: 1000, // Closes faster
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      theme: "colored",
+    });
   } 
 
   const getCartCount = () => {
     let totalCount = 0;
 
-    for (const items in cartItems) {
-      for (const item in cartItems[items]){
-        try {
-          if (cartItems[items][item] > 0) {
-            totalCount += cartItems[items][item]
-          }
-        } catch (error) {
-          
+    for (const itemId in cartItems) {  
+      for (const size in cartItems[itemId]) {  
+        if (cartItems[itemId][size] > 0) { 
+          totalCount += cartItems[itemId][size];
         }
       }
     } 
-    return totalCount
-  }
 
-  const updateQuantity = async (itemId, size, quantity) => {
+    return totalCount;
+};
+
+
+  const updateQuantity =  (itemId, size, quantity) => {
 
     let cartData = structuredClone(cartItems)
 
@@ -62,7 +70,19 @@ const ShopContextProvider = (props) => {
 
   }
 
-  
+  const getCartAmount = () => {
+    
+    let totalAmount = 0;
+    for (const items in cartItems){
+      let itemInfo = products.find((product) => product._id === items)
+      for (const item in cartItems[items]){
+        if (cartItems[items][item] > 0) {
+          totalAmount += itemInfo?.price * cartItems[items][item]
+        }
+      }
+    } 
+    return totalAmount 
+  }  
   const value = {
     products, 
     currency, 
@@ -71,13 +91,10 @@ const ShopContextProvider = (props) => {
     showSearch, setShowSearch,
     cartItems, addToCart,
     getCartCount,
-    updateQuantity
+    updateQuantity,
+    getCartAmount
   }
 
-  useEffect(() => {
-    console.log(cartItems)
-  },[cartItems])
-  
   return (
     <ShopContext.Provider value={value}>
         {props.children}
